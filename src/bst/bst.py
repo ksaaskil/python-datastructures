@@ -3,7 +3,7 @@ from typing import Optional, Any, TypeVar, Generic, Callable
 from typing_extensions import Protocol
 from abc import abstractmethod
 
-C = TypeVar("C", bound="Comparable")
+Key = TypeVar("Key", bound="Comparable")
 
 
 class Comparable(Protocol):
@@ -12,37 +12,37 @@ class Comparable(Protocol):
         pass
 
     @abstractmethod
-    def __lt__(self: C, other: C) -> bool:
+    def __lt__(self: Key, other: Key) -> bool:
         pass
 
-    def __gt__(self: C, other: C) -> bool:
+    def __gt__(self: Key, other: Key) -> bool:
         return (not self < other) and self != other
 
-    def __le__(self: C, other: C) -> bool:
+    def __le__(self: Key, other: Key) -> bool:
         return self < other or self == other
 
-    def __ge__(self: C, other: C) -> bool:
+    def __ge__(self: Key, other: Key) -> bool:
         return not self < other
 
 
 @dataclass
-class Node(Generic[C]):
-    key: C
-    parent: Optional["Node[C]"] = None
-    left: Optional["Node[C]"] = None
-    right: Optional["Node[C]"] = None
+class Node(Generic[Key]):
+    key: Key
+    parent: Optional["Node[Key]"] = None
+    left: Optional["Node[Key]"] = None
+    right: Optional["Node[Key]"] = None
 
 
 # Alias for convenience
 @dataclass
-class Tree_(Generic[C]):
-    root: Optional[Node[C]]
+class Tree_(Generic[Key]):
+    root: Optional[Node[Key]]
 
 
 Tree = Node
 
 
-def insert_(tree: Tree_[C], key: C):
+def insert_(tree: Tree_[Key], key: Key):
     """Reference insertion algorithm from Introduction to Algorithms. Operates in-place.
     """
     y = None
@@ -66,7 +66,7 @@ def insert_(tree: Tree_[C], key: C):
         y.right = z
 
 
-def insert(node: Optional[Node[C]], z: Node[C]) -> Node[C]:
+def insert(node: Optional[Node[Key]], z: Node[Key]) -> Node[Key]:
     if node is None:
         return z
 
@@ -80,22 +80,22 @@ def insert(node: Optional[Node[C]], z: Node[C]) -> Node[C]:
         return replace(node, right=insert(node.right, z))
 
 
-def walk(tree: Optional[Tree[C]], call: Callable[[Node[C]], None]):
+def inorder_walk(tree: Optional[Tree[Key]], visit: Callable[[Node[Key]], None]):
     """In-order tree walk."""
 
     if tree is None:
         return
 
-    walk(tree.left, call)
-    call(tree)
-    walk(tree.right, call)
+    inorder_walk(tree.left, visit)
+    visit(tree)
+    inorder_walk(tree.right, visit)
 
 
 V = TypeVar("V")
 
 
 def reduce(
-    tree: Optional[Tree[C]], accumulator: Callable[[V, Node[C]], V], initializer: V,
+    tree: Optional[Tree[Key]], accumulator: Callable[[V, Node[Key]], V], initializer: V,
 ) -> V:
     """Accumulate values by walking the tree.
 
@@ -110,10 +110,10 @@ def reduce(
 
     acc = initializer
 
-    def call(node: Node[C]):
+    def call(node: Node[Key]):
         nonlocal acc
         acc = accumulator(acc, node)
 
-    walk(tree, call)
+    inorder_walk(tree, visit=call)
 
     return acc

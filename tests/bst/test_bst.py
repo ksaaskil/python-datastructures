@@ -1,10 +1,24 @@
-from bst import Node, insert, Tree, reduce as accumulate
+from bst import Node, insert, Tree, reduce as accumulate, Key
+from bst.bst import inorder_walk
 import hypothesis.strategies as some
 from functools import reduce
 from typing import Sequence, TypeVar, Sequence, Tuple, Optional
 from hypothesis import given, assume
 
 Ex = TypeVar("Ex")
+
+
+def collect(tree: Tree[Key]):
+    """Helper function to collect all nodes from a tree.
+    """
+    acc = []
+
+    def add(node: Node[Key]):
+        acc.append(node)
+
+    inorder_walk(tree, visit=add)
+
+    return acc
 
 
 @some.composite
@@ -36,6 +50,21 @@ def test_insertion(tree_and_inserted):
         assert tree.key == inserted[0]
 
 
+def assert_tree_property_holds(tree: Tree[Key]):
+
+    nodes = collect(tree)
+
+    for node in nodes:
+        left_values = collect(node.left)
+        right_values = collect(node.right)
+
+        for left in left_values:
+            assert left.key <= node.key
+
+        for right in right_values:
+            assert right.key >= node.key
+
+
 @given(tree_and_inserted=tree())
 def test_tree_property(tree_and_inserted):
     """
@@ -47,17 +76,4 @@ def test_tree_property(tree_and_inserted):
 
     assert tree is not None
 
-    nodes_in_tree = accumulate(tree, lambda acc, v: [*acc, v], [])
-
-    for node in nodes_in_tree:
-        if node is None:
-            pass
-
-        left_values = accumulate(node.left, lambda acc, v: [*acc, v.key], [])
-        right_values = accumulate(node.right, lambda acc, v: [*acc, v.key], [])
-
-        for left in left_values:
-            assert left <= node.key
-
-        for right in right_values:
-            assert right >= node.key
+    assert_tree_property_holds(tree)
