@@ -50,19 +50,14 @@ def test_insertion(tree_and_inserted):
         assert tree.key == inserted[0]
 
 
-def assert_tree_property_holds(tree: Tree[Key]):
+def assert_tree_property_holds(node: Node[Key]):
+    if node.left is not None:
+        assert node.key >= node.left.key
+        assert_tree_property_holds(node.left)
 
-    nodes = collect(tree)
-
-    for node in nodes:
-        left_values = collect(node.left)
-        right_values = collect(node.right)
-
-        for left in left_values:
-            assert left.key <= node.key
-
-        for right in right_values:
-            assert right.key >= node.key
+    if node.right is not None:
+        assert node.key <= node.right.key
+        assert_tree_property_holds(node.right)
 
 
 @given(tree_and_inserted=tree())
