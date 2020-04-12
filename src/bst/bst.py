@@ -80,6 +80,11 @@ def insert(node: Optional[Node[Key]], z: Node[Key]) -> Node[Key]:
         return replace(node, right=insert(node.right, z))
 
 
+def delete(node: Optional[Node[Key]], z: Node[Key]) -> Optional[Node[Key]]:
+    # TODO
+    return node
+
+
 def inorder_walk(tree: Optional[Tree[Key]], visit: Callable[[Node[Key]], None]):
     """In-order tree walk."""
 
@@ -91,21 +96,23 @@ def inorder_walk(tree: Optional[Tree[Key]], visit: Callable[[Node[Key]], None]):
     inorder_walk(tree.right, visit)
 
 
-V = TypeVar("V")
+Acc = TypeVar("Acc")
 
 
-def reduce(
-    tree: Optional[Tree[Key]], accumulator: Callable[[V, Node[Key]], V], initializer: V,
-) -> V:
+def inorder_reduce(
+    tree: Optional[Tree[Key]],
+    accumulator: Callable[[Acc, Node[Key]], Acc],
+    initializer: Acc,
+) -> Acc:
     """Accumulate values by walking the tree.
 
     Arguments:
-        tree {Optional[Tree[C]]} -- Tree to walk.
-        accumulator {Callable[[V, Node[C]], V]} -- Accumulator function.
-        initializer {V} -- Initial value.
+        tree {Optional[Tree[Key]]} -- Tree to walk.
+        accumulator {Callable[[V, Node[Key]], Acc]} -- Accumulator function.
+        initializer {Acc} -- Initial value.
 
     Returns:
-        V -- Accumulated value.
+        Acc -- Accumulated value.
     """
 
     acc = initializer

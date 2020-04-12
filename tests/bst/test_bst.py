@@ -1,4 +1,4 @@
-from bst import Node, insert, Tree, reduce as accumulate, Key
+from bst import Node, insert, Tree, Key
 from bst.bst import inorder_walk
 import hypothesis.strategies as some
 from functools import reduce
@@ -40,10 +40,10 @@ def tree(
 def test_insertion(tree_and_inserted):
     """Test all values inserted into tree can be found from the tree."""
     tree, inserted = tree_and_inserted
-    values_in_tree = accumulate(tree, lambda acc, v: [*acc, v.key], [])
+    keys_in_tree = [node.key for node in collect(tree)]
 
     # Invariant
-    assert sorted(values_in_tree) == sorted(inserted)
+    assert sorted(keys_in_tree) == sorted(inserted)
 
     # Sanity check: first value inserted is the root
     if len(inserted) > 0:
