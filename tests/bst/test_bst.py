@@ -1,4 +1,4 @@
-from bst import Node, insert, Tree, Key, delete
+from bst import Node, insert, Tree, Key, delete, transplant
 from bst.bst import inorder_walk
 import hypothesis.strategies as some
 from functools import reduce
@@ -75,7 +75,33 @@ def test_deletion(tree_and_inserted, data):
 
     for node in to_delete:
         assert node not in nodes_after_delete
+        #
         # pass
+
+
+@given(tree_and_inserted=tree(), data=some.data())
+def test_transplant(tree_and_inserted, data):
+    tree_to_transplant, inserted = tree_and_inserted
+
+    assume(len(inserted) > 0)
+
+    # Pick something to transplant
+    nodes = collect(tree_to_transplant)
+    node_to_transplant = data.draw(some.sampled_from(nodes), label="Node to replace")
+
+    another_tree, another_inserted = data.draw(
+        tree(), label="Node to add with transplant"
+    )
+
+    new_tree = transplant(tree_to_transplant, node_to_transplant, another_tree)
+
+    new_nodes = collect(new_tree)
+
+    if node_to_transplant != another_tree:
+        assert node_to_transplant not in new_nodes
+
+    if another_tree is not None:
+        assert another_tree in new_nodes
 
 
 def assert_bst_property_holds(node: Optional[Node[Key]]):
@@ -98,8 +124,4 @@ def test_tree_property(tree_and_inserted):
     is smaller than the node's key, and all values in the right subtree are larger than the node's key.
     """
     tree, inserted = tree_and_inserted
-    assume(len(inserted) > 0)  # Only test non-empty trees
-
-    assert tree is not None
-
     assert_bst_property_holds(tree)

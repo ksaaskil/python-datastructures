@@ -80,9 +80,48 @@ def insert(node: Optional[Node[Key]], z: Node[Key]) -> Node[Key]:
         return replace(node, right=insert(node.right, z))
 
 
+def transplant(tree: Optional[Node], u: Node, v: Optional[Node]):
+    """Replace subtree as a child of its parent with another subtree.
+    """
+
+    assert tree is not None, "Expected to find u in tree to transplant v"
+
+    if tree == u:
+        # u is the root, replace whole tree
+        return v
+
+    if tree.left == u:
+        if v is not None:
+            v = replace(v, parent=tree)
+        tree = replace(tree, left=v)
+        return tree
+    elif tree.right == u:
+        if v is not None:
+            v = replace(v, parent=tree)
+        tree = replace(tree, right=v)
+        return tree
+
+    # Keep looking for u
+    if u.key < tree.key:
+        # u is on the left
+        return replace(tree, left=transplant(tree.left, u, v))
+    else:
+        # u is on the right
+        return replace(tree, right=transplant(tree.right, u, v))
+
+
 def delete(node: Optional[Node[Key]], z: Node[Key]) -> Optional[Node[Key]]:
-    # TODO
-    return node
+    if node is None:
+        return None
+
+    if node != z:
+        if z.key < node.key:
+            return delete(node.left, z)
+        else:
+            return delete(node.right, z)
+
+    # node is z
+    assert node == z
 
 
 def inorder_walk(tree: Optional[Tree[Key]], visit: Callable[[Node[Key]], None]):
