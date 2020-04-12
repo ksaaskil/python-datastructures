@@ -65,7 +65,7 @@ def test_deletion(tree_and_inserted, data):
 
     # Pick something to delete
     nodes = collect(tree)
-    to_delete = data.draw(nodes_to_delete(nodes))
+    to_delete = data.draw(nodes_to_delete(nodes), label="Nodes to delete")
 
     for node in to_delete:
         tree = delete(tree, node)
