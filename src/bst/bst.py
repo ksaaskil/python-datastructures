@@ -99,6 +99,16 @@ V = TypeVar("V")
 def reduce(
     tree: Optional[Tree[C]], accumulator: Callable[[V, Node[C]], V], initializer: V,
 ) -> V:
+    """Accumulate values by walking the tree.
+
+    Arguments:
+        tree {Optional[Tree[C]]} -- Tree to walk.
+        accumulator {Callable[[V, Node[C]], V]} -- Accumulator function.
+        initializer {V} -- Initial value.
+
+    Returns:
+        V -- Accumulated value.
+    """
 
     acc = initializer
 
