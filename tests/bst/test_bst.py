@@ -51,10 +51,10 @@ def test_insertion(tree_and_inserted):
 
 
 @some.composite
-def nodes_to_delete(draw, nodes: Sequence[Node]):
+def nodes_to_delete(draw, tree: Optional[Tree]):
+    nodes = collect(tree)
     to_delete_ids = draw(some.slices(len(nodes)))
-    to_delete = nodes[to_delete_ids]
-    return to_delete
+    return nodes[to_delete_ids]
 
 
 @given(tree_and_inserted=tree(), data=some.data())
@@ -64,8 +64,7 @@ def test_deletion(tree_and_inserted, data):
     assume(len(inserted) > 0)
 
     # Pick something to delete
-    nodes = collect(tree)
-    to_delete = data.draw(nodes_to_delete(nodes), label="Nodes to delete")
+    to_delete = data.draw(nodes_to_delete(tree), label="Nodes to delete")
 
     for node in to_delete:
         tree = delete(tree, node)
