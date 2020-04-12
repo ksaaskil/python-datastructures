@@ -76,10 +76,8 @@ def insert(node: Optional[Node[C]], z: Node[C]) -> Node[C]:
     if z.key < node.key:
         # Replace current node's left child with a tree where z has been inserted
         return replace(node, left=insert(node.left, z))
-    elif z.key > node.key:
-        return replace(node, right=insert(node.right, z))
     else:
-        return node
+        return replace(node, right=insert(node.right, z))
 
 
 def walk(tree: Optional[Tree[C]], call: Callable[[Node[C]], None]):

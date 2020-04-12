@@ -29,7 +29,7 @@ def test_insertion(tree_and_inserted):
     values_in_tree = accumulate(tree, lambda acc, v: [*acc, v.key], [])
 
     # Invariant
-    assert set(values_in_tree) == set(inserted)
+    assert sorted(values_in_tree) == sorted(inserted)
 
     # Sanity check: first value inserted is the root
     if len(inserted) > 0:
@@ -57,7 +57,7 @@ def test_tree_property(tree_and_inserted):
         right_values = accumulate(node.right, lambda acc, v: [*acc, v.key], [])
 
         for left in left_values:
-            assert left < node.key
+            assert left <= node.key
 
         for right in right_values:
-            assert right > node.key
+            assert right >= node.key
