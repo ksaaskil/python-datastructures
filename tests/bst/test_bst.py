@@ -1,4 +1,4 @@
-from bst import Node, insert, Tree, Key
+from bst import Node, insert, Tree, Key, delete
 from bst.bst import inorder_walk
 import hypothesis.strategies as some
 from functools import reduce
@@ -8,7 +8,7 @@ from hypothesis import given, assume
 Ex = TypeVar("Ex")
 
 
-def collect(tree: Tree[Key]):
+def collect(tree: Optional[Tree[Key]]):
     """Helper function to collect all nodes from a tree.
     """
     acc = []
@@ -50,14 +50,46 @@ def test_insertion(tree_and_inserted):
         assert tree.key == inserted[0]
 
 
-def assert_tree_property_holds(node: Node[Key]):
+@some.composite
+def nodes_to_delete(draw, nodes: Sequence[Node]):
+    to_delete_ids = draw(some.slices(len(nodes)))
+    to_delete = nodes[to_delete_ids]
+    return to_delete
+
+
+@given(tree_and_inserted=tree(), data=some.data())
+def test_deletion(tree_and_inserted, data):
+    tree, inserted = tree_and_inserted
+
+    assume(len(inserted) > 0)
+
+    # Pick something to delete
+    nodes = collect(tree)
+    to_delete = data.draw(nodes_to_delete(nodes))
+
+    for node in to_delete:
+        tree = delete(tree, node)
+
+    assert_bst_property_holds(tree)
+
+    nodes_after_delete = collect(tree)
+
+    for node in to_delete:
+        assert node not in nodes_after_delete
+        # pass
+
+
+def assert_bst_property_holds(node: Optional[Node[Key]]):
+    if node is None:
+        return
+
     if node.left is not None:
         assert node.key >= node.left.key
-        assert_tree_property_holds(node.left)
+        assert_bst_property_holds(node.left)
 
     if node.right is not None:
         assert node.key <= node.right.key
-        assert_tree_property_holds(node.right)
+        assert_bst_property_holds(node.right)
 
 
 @given(tree_and_inserted=tree())
@@ -71,4 +103,4 @@ def test_tree_property(tree_and_inserted):
 
     assert tree is not None
 
-    assert_tree_property_holds(tree)
+    assert_bst_property_holds(tree)
