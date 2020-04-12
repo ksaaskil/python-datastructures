@@ -2,7 +2,7 @@ from bst import Node, insert, Tree, reduce as accumulate
 import hypothesis.strategies as some
 from functools import reduce
 from typing import Sequence, TypeVar, Sequence, Tuple, Optional
-from hypothesis import given
+from hypothesis import given, assume
 
 Ex = TypeVar("Ex")
 
@@ -36,15 +36,28 @@ def test_insertion(tree_and_inserted):
         assert tree.key == inserted[0]
 
 
-def test_insert_right():
-    n = Tree(key=2)
-    new_tree = insert(n, Node(key=3))
-    assert new_tree.key == 2
-    assert new_tree.right.key == 3
+@given(tree_and_inserted=tree())
+def test_tree_property(tree_and_inserted):
+    """
+    Test binary search tree property. All values in the left subtree of each node
+    is smaller than the node's key, and all values in the right subtree are larger than the node's key.
+    """
+    tree, inserted = tree_and_inserted
+    assume(len(inserted) > 0)  # Only test non-empty trees
 
+    assert tree is not None
 
-def test_insert_left():
-    n = Tree(key=2)
-    new_tree = insert(n, Node(key=1))
-    assert new_tree.key == 2
-    assert new_tree.left.key == 1
+    nodes_in_tree = accumulate(tree, lambda acc, v: [*acc, v], [])
+
+    for node in nodes_in_tree:
+        if node is None:
+            pass
+
+        left_values = accumulate(node.left, lambda acc, v: [*acc, v.key], [])
+        right_values = accumulate(node.right, lambda acc, v: [*acc, v.key], [])
+
+        for left in left_values:
+            assert left < node.key
+
+        for right in right_values:
+            assert right > node.key
