@@ -95,13 +95,10 @@ def test_transplant(tree_and_inserted, data):
 
     new_tree = transplant(tree_to_transplant, node_to_transplant, another_tree)
 
-    new_nodes = collect(new_tree)
+    new_keys = [node.key for node in collect(new_tree)]
 
-    if node_to_transplant != another_tree:
-        assert node_to_transplant not in new_nodes
-
-    if another_tree is not None:
-        assert another_tree in new_nodes
+    for another in another_inserted:
+        assert another in new_keys
 
 
 def assert_bst_property_holds(node: Optional[Node[Key]]):
