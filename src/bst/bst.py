@@ -90,6 +90,9 @@ def transplant(tree: Optional[Node], u: Node, v: Optional[Node]):
         # u is the root, replace whole tree
         return v
 
+    # if v is not None:
+    #    assert u.parent == v.parent
+
     if tree.left == u:
         if v is not None:
             v = replace(v, parent=tree)
@@ -116,12 +119,14 @@ def delete(node: Optional[Node[Key]], z: Node[Key]) -> Optional[Node[Key]]:
 
     if node != z:
         if z.key < node.key:
-            return delete(node.left, z)
+            return replace(node, left=delete(node.left, z))
         else:
-            return delete(node.right, z)
+            return replace(node, right=delete(node.right, z))
 
     # node is z
     assert node == z
+
+    return node
 
 
 def inorder_walk(tree: Optional[Tree[Key]], visit: Callable[[Node[Key]], None]):

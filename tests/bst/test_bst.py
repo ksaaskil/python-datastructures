@@ -59,22 +59,29 @@ def nodes_to_delete(draw, tree: Optional[Tree]):
 
 @given(tree_and_inserted=tree(), data=some.data())
 def test_deletion(tree_and_inserted, data):
-    tree, inserted = tree_and_inserted
-
-    assume(len(inserted) > 0)
+    tree, inserted_keys = tree_and_inserted
+    assume(len(inserted_keys) > 0)
 
     # Pick something to delete
     to_delete = data.draw(nodes_to_delete(tree), label="Nodes to delete")
+    keys_to_delete = [node.key for node in to_delete]
 
     for node in to_delete:
         tree = delete(tree, node)
 
     assert_bst_property_holds(tree)
+    keys_after_delete = [node.key for node in collect(tree)]
 
-    nodes_after_delete = collect(tree)
+    # assert len(inserted_keys) - len(keys_after_delete) == len(keys_to_delete)
 
-    for node in to_delete:
-        assert node not in nodes_after_delete
+    kept_keys = set(inserted_keys) - set(keys_to_delete)
+
+    for kept_key in kept_keys:
+        assert kept_key in keys_after_delete
+
+    for deleted_key in keys_to_delete:
+        # assert deleted_key not in keys_after_delete
+        pass
         #
         # pass
 
@@ -87,15 +94,19 @@ def test_transplant(tree_and_inserted, data):
 
     # Pick something to transplant
     nodes = collect(tree_to_transplant)
-    node_to_transplant = data.draw(some.sampled_from(nodes), label="Node to replace")
+    node_to_replace = data.draw(some.sampled_from(nodes), label="Node to replace")
 
     another_tree, another_inserted = data.draw(
         tree(), label="Node to add with transplant"
     )
 
-    new_tree = transplant(tree_to_transplant, node_to_transplant, another_tree)
+    new_tree = transplant(tree_to_transplant, node_to_replace, another_tree)
 
-    new_keys = [node.key for node in collect(new_tree)]
+    new_nodes = collect(new_tree)
+
+    assert node_to_replace not in new_nodes
+
+    new_keys = [node.key for node in new_nodes]
 
     for another in another_inserted:
         assert another in new_keys
