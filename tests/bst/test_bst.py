@@ -117,11 +117,15 @@ def assert_bst_property_holds(node: Optional[Node[Key]]):
         return
 
     if node.left is not None:
-        assert node.key >= node.left.key
+        keys_left = [node.key for node in collect(node.left)]
+        for key in keys_left:
+            assert key <= node.key
         assert_bst_property_holds(node.left)
 
     if node.right is not None:
-        assert node.key <= node.right.key
+        keys_right = [node.key for node in collect(node.right)]
+        for key in keys_right:
+            assert key >= node.key
         assert_bst_property_holds(node.right)
 
 
