@@ -28,8 +28,14 @@ class Node:
 class Tree:
     root: t.Optional["Node"] = None
 
-    def insert(self, key: int, value):
-        insert_to(self, key, value)
+
+def inorder_walk(node: t.Optional[Node], func):
+    if node is None:
+        return
+
+    inorder_walk(node.left, func)
+    func(node)
+    inorder_walk(node.right, func)
 
 
 def insert_to(tree: Tree, key, value):
@@ -56,18 +62,29 @@ def insert_to(tree: Tree, key, value):
         y.right = z
 
 
+def search(tree: Tree, key):
+    pass
+
+
+def delete(tree: Tree, key):
+    pass
+
+
 class TreeDict:
     def __init__(self):
-        self.dict = {}
+        self.tree = Tree()
 
     def __setitem__(self, key, item):
-        self.dict[key] = item
+        insert_to(self.tree, key, item)
 
     def __getitem__(self, key):
-        return self.dict[key]
+        return search(self.tree, key)
 
     def __delitem__(self, key):
-        del self.dict[key]
+        return delete(self.tree, key)
+
+    def inorder_walk(self, func):
+        inorder_walk(self.tree.root, func)
 
 
 __all__ = ["TreeDict"]
