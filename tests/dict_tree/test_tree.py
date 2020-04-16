@@ -1,6 +1,6 @@
 from dict_tree import TreeDict
 from hypothesis import given, assume
-from hypothesis.stateful import RuleBasedStateMachine, rule
+from hypothesis.stateful import RuleBasedStateMachine, rule, Bundle, consumes
 import hypothesis.strategies as some
 import itertools
 import pytest
@@ -80,9 +80,42 @@ def test_search_after_delete(dict_and_values, data):
     """Test drawing a key not in dictionary."""
     dict_tree, inserted = dict_and_values
     inserted_keys = [key for key, _ in inserted]
-    new_key = data.draw(some.sampled_from(inserted_keys))
+    key_to_delete = data.draw(some.sampled_from(inserted_keys), label="Key to delete")
 
-    del dict_tree[new_key]
-
+    del dict_tree[key_to_delete]
     with pytest.raises(KeyError):
-        dict_tree[new_key]
+        dict_tree[key_to_delete]
+
+
+class StatefulDictStateMachine(RuleBasedStateMachine):
+    def __init__(self):
+        super().__init__()
+        self.tree = TreeDict()
+        self.in_dict = {}
+
+    inserted = Bundle("inserted")
+    deleted_keys = Bundle("deleted_keys")
+
+    @rule(target=inserted, key=some.integers(), v=some.text())
+    def insert(self, key, v):
+        self.tree[key] = v
+        return key, v
+
+    @rule(kv=inserted)
+    def search(self, kv):
+        key, value = kv
+        assert self.tree[key] == value
+
+    @rule(kv=consumes(inserted), target=deleted_keys)
+    def delete(self, kv):
+        key, _ = kv
+        del self.tree[key]
+        return key
+
+    @rule(key=consumes(deleted_keys))
+    def search_deleted(self, key):
+        with pytest.raises(KeyError):
+            self.tree[key]
+
+
+TestStatefulDict = StatefulDictStateMachine.TestCase
