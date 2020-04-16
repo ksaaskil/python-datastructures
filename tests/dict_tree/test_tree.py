@@ -2,7 +2,6 @@ from dict_tree import TreeDict
 from hypothesis import given, assume
 from hypothesis.stateful import (
     RuleBasedStateMachine,
-    precondition,
     rule,
     Bundle,
     consumes,
@@ -74,21 +73,8 @@ def test_search_nonexisting(dict_and_values, data):
     new_key = data.draw(some.integers())
     assume(new_key not in inserted_keys)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError):  # type: ignore
         dict_tree[new_key]
-
-
-def test_search_delete():
-    dict_tree = TreeDict()
-    key_vals = [(0, 0), (1, 1)]
-    for key, val in key_vals:
-        dict_tree[key] = val
-
-    del dict_tree[1]
-    assert 1 not in dict_tree
-    assert 0 in dict_tree
-    del dict_tree[0]
-    assert 0 not in dict_tree
 
 
 @given(
@@ -100,11 +86,8 @@ def test_search_after_delete(dict_and_values, data):
     dict_tree, inserted = dict_and_values
     inserted_keys = [key for key, _ in inserted]
     key_to_delete = data.draw(some.sampled_from(inserted_keys), label="Key to delete")
-    keys_before = [node.key for node in collect(dict_tree)]
-    print("Keys before delete:", keys_before)
     del dict_tree[key_to_delete]
-    print("Keys after delete:", [node.key for node in collect(dict_tree)])
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError):  # type: ignore
         dict_tree[key_to_delete]
 
 
@@ -136,8 +119,7 @@ class StatefulDictStateMachine(RuleBasedStateMachine):
     @rule(key=some.integers())
     def search_non_existing(self, key):
         assume(key not in self.in_dict)
-        assert key not in self.in_dict
-        with pytest.raises(KeyError):
+        with pytest.raises(KeyError):  # type: ignore
             self.tree[key]
 
 
