@@ -7,7 +7,7 @@ Examples:
 >>> tree[1] = 'one'
 >>> tree[1]
 'one'
->>> tree[2]   # doctest: +IGNORE_EXCEPTION_DETAIL
+>>> tree[2]
 Traceback (most recent call last):
 KeyError: ...
 # >>> del tree[1]
