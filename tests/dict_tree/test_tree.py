@@ -1,6 +1,12 @@
 from dict_tree import TreeDict
 from hypothesis import given, assume
-from hypothesis.stateful import RuleBasedStateMachine, rule, Bundle, consumes
+from hypothesis.stateful import (
+    RuleBasedStateMachine,
+    precondition,
+    rule,
+    Bundle,
+    consumes,
+)
 import hypothesis.strategies as some
 import itertools
 import pytest
@@ -93,27 +99,28 @@ class StatefulDictStateMachine(RuleBasedStateMachine):
         self.tree = TreeDict()
         self.in_dict = {}
 
-    inserted = Bundle("inserted")
+    inserted_keys = Bundle("inserted")
     deleted_keys = Bundle("deleted_keys")
 
-    @rule(target=inserted, key=some.integers(), v=some.text())
+    @rule(target=inserted_keys, key=some.integers(), v=some.text())
     def insert(self, key, v):
         self.tree[key] = v
-        return key, v
-
-    @rule(kv=inserted)
-    def search(self, kv):
-        key, value = kv
-        assert self.tree[key] == value
-
-    @rule(kv=consumes(inserted), target=deleted_keys)
-    def delete(self, kv):
-        key, _ = kv
-        del self.tree[key]
+        self.in_dict[key] = v
         return key
 
-    @rule(key=consumes(deleted_keys))
-    def search_deleted(self, key):
+    @rule(key=inserted_keys)
+    def search(self, key):
+        assert self.tree[key] == self.in_dict[key]
+
+    @rule(key=consumes(inserted_keys))
+    def delete(self, key):
+        del self.tree[key]
+        del self.in_dict[key]
+
+    @rule(key=some.integers())
+    def search_non_existing(self, key):
+        assume(key not in self.in_dict)
+        assert key not in self.in_dict
         with pytest.raises(KeyError):
             self.tree[key]
 
