@@ -5,6 +5,8 @@ Examples:
 
 >>> tree = TreeDict()
 >>> tree[1] = 'one'
+>>> tree[1]
+'one'
 
 # >>> tree[1]
 # 'one'

@@ -1,5 +1,6 @@
 from dict_tree import TreeDict
 from hypothesis import given
+from hypothesis.stateful import RuleBasedStateMachine, rule
 import hypothesis.strategies as some
 import itertools
 
