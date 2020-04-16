@@ -29,13 +29,16 @@ class Tree:
     root: t.Optional["Node"] = None
 
 
-def inorder_walk(node: t.Optional[Node], func):
+def _inorder_walk(node: t.Optional[Node], func):
     if node is None:
         return
-
-    inorder_walk(node.left, func)
+    print("Calling on ", str(node))
+    _inorder_walk(node.left, func)
+    print("Done left")
     func(node)
-    inorder_walk(node.right, func)
+    print("Done center")
+    _inorder_walk(node.right, func)
+    print("Done right")
 
 
 def insert_to(tree: Tree, key, value):
@@ -50,8 +53,11 @@ def insert_to(tree: Tree, key, value):
         y = x
         if z.key < x.key:
             x = x.left
-        else:
+        elif z.key > x.key:
             x = x.right
+        else:
+            x.value = value
+            return
 
     z.parent = y
     if y is None:
@@ -83,8 +89,15 @@ class TreeDict:
     def __delitem__(self, key):
         return delete(self.tree, key)
 
+    def __contains__(self, key):
+        try:
+            self[key]
+            return True
+        except KeyError:
+            return False
+
     def inorder_walk(self, func):
-        inorder_walk(self.tree.root, func)
+        _inorder_walk(self.tree.root, func)
 
 
 __all__ = ["TreeDict"]
