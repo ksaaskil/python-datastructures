@@ -30,22 +30,39 @@ class Node:
     left: t.Optional["Node"] = None
     right: t.Optional["Node"] = None
 
+    def __str__(self):
+        return "Key {}, left {}, right {}".format(
+            self.key, id(self.left), id(self.right)
+        )
+
+    def __repr__(self):
+        return "Key: {}, Left: ({}), Right: ({}), self: {}".format(
+            self.key, repr(self.left), repr(self.right), id(self)
+        )
+
 
 @dataclass
 class Tree:
     root: t.Optional["Node"] = None
 
+    def __repr__(self):
+        return (
+            "Empty tree"
+            if self.root is None
+            else "Non-empty tree with root: ({})".format(repr(self.root))
+        )
+
 
 def _inorder_walk(node: t.Optional[Node], func):
     if node is None:
         return
-    print("Calling on ", str(node))
+    # print("Calling on ", str(node))
     _inorder_walk(node.left, func)
-    print("Done left")
+    # print("Done left")
     func(node)
-    print("Done center")
+    # print("Done center")
     _inorder_walk(node.right, func)
-    print("Done right")
+    # print("Done right")
 
 
 def insert_to(tree: Tree, key, value):
@@ -54,19 +71,20 @@ def insert_to(tree: Tree, key, value):
     y = None
     x = tree.root
 
-    z = Node(key=key, value=value)
+    log.debug("Inserting %d, %s", key, value)
 
     while x is not None:
         y = x
-        if z.key < x.key:
+        if key < x.key:
             x = x.left
-        elif z.key > x.key:
+        elif key > x.key:
             x = x.right
         else:
+            log.debug("Duplicate key %d, changing value to %s", key, value)
             x.value = value
             return
 
-    z.parent = y
+    z = Node(key=key, value=value, parent=y)
     if y is None:
         tree.root = z
     elif z.key < y.key:
@@ -74,22 +92,21 @@ def insert_to(tree: Tree, key, value):
     else:
         y.right = z
 
+    log.debug("Inserted %s", z)
+
 
 def transplant(tree: Tree, node1: Node, node2: t.Optional[Node]):
-    log.debug(
-        "Transplanting to node %d, %s, adding %s",
-        node1.key,
-        str(node1.value),
-        "None" if node2 is None else node2.key,
-    )
+    log.debug("Transplanting to node %s, adding %s", repr(node1), repr(node2))
     if node1.parent is None:
         tree.root = node2
     elif node1 == node1.parent.left:
+        log.debug("Adding %s as left child of %s", repr(node2), repr(node1.parent))
         # Left child
         node1.parent.left = node2
     elif node1 == node1.parent.right:
+        log.debug("Adding %s as right child of %s", repr(node2), repr(node1.parent))
         # Right child
-        node1.parent.right == node2
+        node1.parent.right = node2
     else:
         raise AssertionError(
             "Something horribly wrong in the tree, not a child of the parent"
@@ -97,6 +114,8 @@ def transplant(tree: Tree, node1: Node, node2: t.Optional[Node]):
 
     if node2 is not None:
         node2.parent = node1.parent
+
+    log.debug("Tree after transplant: %s", repr(tree))
 
 
 def minimum(node: t.Optional[Node]) -> t.Optional[Node]:
@@ -146,7 +165,8 @@ def delete(tree: Tree, key: int):
     node = search_node(tree, key)
     log.debug("Found node with key %d, value %s", node.key, str(node.value))
     delete_node(tree, node)
-    log.debug("Deleted node")
+    log.debug("Deleted node %s", repr(node))
+    log.debug("Remaining tree %s", repr(tree))
 
 
 def search(tree: Tree, key):

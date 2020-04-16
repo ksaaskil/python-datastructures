@@ -78,6 +78,19 @@ def test_search_nonexisting(dict_and_values, data):
         dict_tree[new_key]
 
 
+def test_search_delete():
+    dict_tree = TreeDict()
+    key_vals = [(0, 0), (1, 1)]
+    for key, val in key_vals:
+        dict_tree[key] = val
+
+    del dict_tree[1]
+    assert 1 not in dict_tree
+    assert 0 in dict_tree
+    del dict_tree[0]
+    assert 0 not in dict_tree
+
+
 @given(
     dict_and_values=dict_and_values().filter(lambda keyval: len(keyval[1]) > 0),
     data=some.data(),
@@ -87,8 +100,10 @@ def test_search_after_delete(dict_and_values, data):
     dict_tree, inserted = dict_and_values
     inserted_keys = [key for key, _ in inserted]
     key_to_delete = data.draw(some.sampled_from(inserted_keys), label="Key to delete")
-
+    keys_before = [node.key for node in collect(dict_tree)]
+    print("Keys before delete:", keys_before)
     del dict_tree[key_to_delete]
+    print("Keys after delete:", [node.key for node in collect(dict_tree)])
     with pytest.raises(KeyError):
         dict_tree[key_to_delete]
 
@@ -114,6 +129,7 @@ class StatefulDictStateMachine(RuleBasedStateMachine):
 
     @rule(key=consumes(inserted_keys))
     def delete(self, key):
+        assume(key not in self.in_dict)
         del self.tree[key]
         del self.in_dict[key]
 
