@@ -5,12 +5,18 @@ import itertools
 
 
 def keys_and_values():
-    return some.lists(some.tuples(some.integers(), some.text()))
+    return some.lists(some.tuples(some.integers(), some.binary()))
 
 
 def dedupe(key_value_pairs):
-    """Remove duplicate keys by always picking the last."""
-    grouped = itertools.groupby(key_value_pairs, lambda pair: pair[0])
+    """Remove duplicate keys by always picking the last. Also sorts the array by key.
+    
+>>> dedupe([(0, 0), (0, 1), (1, 2), (0, 2)])
+[(0, 2), (1, 2)]
+    
+    """
+    as_sorted = sorted(key_value_pairs, key=lambda pair: pair[0])
+    grouped = itertools.groupby(as_sorted, lambda pair: pair[0])
 
     deduped = []
     for _, same_key in grouped:
@@ -40,12 +46,13 @@ def collect(tree: TreeDict):
 
 
 @given(dict_and_values=dict_and_values())
-def test_insert_and_walk(dict_and_values):
+def test_insert_and_search(dict_and_values):
     dict_tree, inserted = dict_and_values
     deduped = dedupe(inserted)
+    assert len(deduped) <= len(inserted)
 
-    # collected = collect(dict_tree)
-    # print(collected)
-    # print(inserted)
-    # print(collected)
-    # assert len(collected) == len(deduped)
+    for key, value in deduped:
+        in_dict = dict_tree[key]
+        assert in_dict == value, "Expected {} for key {}, got {}".format(
+            value, key, in_dict
+        )

@@ -69,7 +69,20 @@ def insert_to(tree: Tree, key, value):
 
 
 def search(tree: Tree, key):
-    pass
+    if tree.root is None:
+        raise KeyError("Empty dictionary, can't find key {}".format(key))
+
+    x = tree.root
+
+    while x is not None:
+        if key < x.key:
+            x = x.left
+        elif key > x.key:
+            x = x.right
+        else:
+            return x.value
+
+    raise KeyError("Key {} not found".format(key))
 
 
 def delete(tree: Tree, key):
